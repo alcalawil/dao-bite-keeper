@@ -33,10 +33,10 @@ router.post('/start', async (req, res) => {
 });
 
 router.post('/stop', async (req, res) => {
-  const ok = await keeperService.stopKeeper();
+  const running = await keeperService.stopKeeper();
   res.status(200).json({
     message: 'Bite Keeper stopped',
-    ok
+    running
   });
 });
 

@@ -1,5 +1,5 @@
-const { createRange } = require('../utils/util');
-
+const { createRange, logger } = require('../utils/util');
+const blockEventsMock = require('../utils/blockEventsMock');
 class BiteKeeperService {
   constructor(Maker, config) {
     this.config = config;
@@ -18,16 +18,31 @@ class BiteKeeperService {
 
     await this.maker.authenticate();
     this.running = true;
-    const lastCdpId = await this.getLastCdpId();
-    console.log(lastCdpId);
-    // availableCDPs = await this.getAvailableCdps(1, lastCdpId);
+    blockEventsMock.subscribe(() => {
+      this._startBiteProcess();
+    });
+
     return this.running;
   }
 
+  async _startBiteProcess() {
+    const lastCdpId = await this.getLastCdpId();
+    /*
+      lastCdpId is greater than 6000, so it generates a memory leak. 
+      Because of that I'm using 
+      TODO: Find a way to avoid memory leak, 
+      maybe biting one by one instead of biting many
+    */
+    const unsafeCDPs = await this.getUnsafeCDPs(1, 100);
+    await this.biteMany(unsafeCDPs);
+  }
+
   stopKeeper() {
+    if (!this.running) return;
     const web3Service = this.maker.service('web3');
     web3Service.disconnect();
     this.running = false;
+    blockEventsMock.unsubscribe();
     return this.running;
   }
 
@@ -44,39 +59,67 @@ class BiteKeeperService {
     return cupi.toNumber();
   }
 
-  async getAvailableCdps(first = 1, last = 1000) {
-    const result = [];
+  async getUnsafeCDPs(first = 1, last = 100) {
+    const unsafeCdps = [];
     const range = createRange(first, last);
 
     await Promise.all(
       range.map(async cdpId => {
         try {
-          const cdp = await maker.getCdp(cdpId);
-          logger.debug('CDP Object', JSON.stringify(cdp));
-          result.push({ cdpId, cdp });
+          const cdp = await this.maker.getCdp(cdpId);
+          const isSafe = await cdp.isSafe();
+          if (!isSafe) {
+            logger.debug(`CDP: #cdpId# is unsafe :)`);
+            unsafeCdps.push({ cdpId, cdp });
+          }
         } catch (err) {
-          logger.warn(`CDP ${cdpId} does not exist!`);
+          logger.debug(`CDP ${cdpId} does not exist or is not available!`);
         }
       })
     );
 
-    return result;
+    return unsafeCdps;
   }
 
-  async getUnsafeCDPs(cdps) {
-    const unsafeCDPs = await Promise.all(
-      cdps.filter(async cdp => {
-        try {
-          return await cdp.cdp.isSafe();
-        } catch {
-          logger.debug(`CDP #${cdp.cdpId} is not available`);
-          // TODO: drop it from the cdp list
-          return false; // no unsafe
-        }
-      })
-    );
+  async biteOne({ cdpId, cdp }) {
+    if (!this.running) {
+      return;
+    }
 
-    return unsafeCDPs;
+    try {
+      const txMgr = this.maker.service('transactionManager');
+      const bitePromise = cdp.bite();
+  
+      txMgr.listen(bitePromise, {
+        pending: tx => {
+          logger.debug(`CDP #${cdpId}# is pending`);
+        },
+        mined: tx => {
+          logger.debug(`CDP #${cdpId}# was mined`);
+        },
+        confirmed: tx => {
+          logger.debug(`CDP #${cdpId}# was confirmed`);      
+        },
+        error: tx => {
+          logger.debug(`CDP #${cdpId}# failed`);
+        }
+      });
+  
+      await txMgr.confirm(bitePromise); // 5 blocks confirmations
+    } catch (err) {
+      logger.warn(`biteOne fail: CDP: #${cdpId}# - ${err.message}`);
+    }
+  }
+
+  async biteMany(unsafeCdps) {
+    if (unsafeCdps.length < 1) {
+      logger.info("No CDPs to bite!");
+      return;
+    }
+
+    unsafeCdps.map(({ cdpId, cdp }) => {
+      this.biteOne({ cdpId, cdp });
+    });
   }
 
   async getStatus() {

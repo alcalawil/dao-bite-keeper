@@ -1,5 +1,6 @@
 {
   "networkType": "http",
   "privateKey": "PRIVATE_KEY",
-  "url": "INFURA_URL"
+  "url": "INFURA_URL",
+  "logLevel": "debug"
 }
