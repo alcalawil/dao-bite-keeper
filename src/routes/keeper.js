@@ -1,5 +1,6 @@
 const express = require('express');
-const exchangeService = require('../services/keeperService');
+const dai = require('dai');
+const exchangeService = require('../services/keeperService')(dai, config);
 const { validateInputParams } = require('../utils/validators');
 
 const router = express.Router();
