@@ -7,6 +7,7 @@ A simple MakerDao bite keeper to bite unsafe positions
 - Depends on dai.js
 - It needs an etherium node. You can use infura
 - Needs a private key to sign transactions. You can use MetaMask
+- You can find environment variables names in src/config.js
 
 ## Usage
 
