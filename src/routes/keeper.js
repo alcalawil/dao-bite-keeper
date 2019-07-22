@@ -1,6 +1,6 @@
 const express = require('express');
 const dai = require('@makerdao/dai');
-const config = require('../../config');
+const config = require('../config');
 const keeperService = require('../services/keeperService')(dai, config);
 const { validateInputParams } = require('../utils/validators');
 

@@ -1,5 +1,5 @@
 const winston = require('winston');
-const config = require('../../config');
+const config = require('../config');
 
 const createRange = (first, last) => {
   return Array.from(new Array(last - first + 1), (x, i) => i + first);
