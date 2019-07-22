@@ -12,6 +12,9 @@ A simple MakerDao bite keeper to bite unsafe positions
 
 - `npm i`
 - `npm start`
+- POST /bite-keeper/start
+- POST /bite-keeper/stop
+- GET /bite-keeper/status
 
 ## TODO
 
