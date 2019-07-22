@@ -1,4 +1,4 @@
-const { createRange } = require('./utils/utils');
+const { createRange } = require('../utils/util');
 
 class BiteKeeperService {
   constructor(Maker, config) {
@@ -17,15 +17,18 @@ class BiteKeeperService {
     });
 
     await this.maker.authenticate();
-
     this.running = true;
-    // const lastCdpId = await this.getLastCdpId();
-
+    const lastCdpId = await this.getLastCdpId();
+    console.log(lastCdpId);
     // availableCDPs = await this.getAvailableCdps(1, lastCdpId);
+    return this.running;
   }
 
   stopKeeper() {
-    // unauthenticated
+    const web3Service = this.maker.service('web3');
+    web3Service.disconnect();
+    this.running = false;
+    return this.running;
   }
 
   async getLastCdpId(forceAuthentication = false) {
@@ -74,6 +77,11 @@ class BiteKeeperService {
     );
 
     return unsafeCDPs;
+  }
+
+  async getStatus() {
+    const lastCdp = await this.getLastCdpId();
+    return { lastCdp, running: this.running };
   }
 }
 
