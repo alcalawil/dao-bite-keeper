@@ -24,7 +24,7 @@ A simple MakerDao bite keeper to bite unsafe positions
 
 ## TODO
 
-- Pass env variables in docker run
+- Use Docker compose
 - Find a way to avoid memory leak in when biting many
     - Creating a bite queue could be a solution
 - Subscribe to the new block event instead of using a setInterval mock
