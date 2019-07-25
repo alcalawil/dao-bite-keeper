@@ -1,5 +1,5 @@
 const { createRange, logger } = require('../utils/util');
-const blockEventsMock = require('../utils/blockEventsMock');
+const blockEvents = require('./blockEvents');
 class BiteKeeperService {
   constructor(Maker, config) {
     this.config = config;
@@ -18,7 +18,8 @@ class BiteKeeperService {
 
     await this.maker.authenticate();
     this.running = true;
-    blockEventsMock.subscribe(() => {
+    blockEvents.subscribe((error, blockHeaders) => {
+      logger.debug(`New eth block from web3: ${blockHeaders.number}`);
       this._startBiteProcess();
     });
 
@@ -42,7 +43,7 @@ class BiteKeeperService {
     const web3Service = this.maker.service('web3');
     web3Service.disconnect();
     this.running = false;
-    blockEventsMock.unsubscribe();
+    blockEvents.unsubscribe();
     return this.running;
   }
 
