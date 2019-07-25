@@ -24,10 +24,10 @@ A simple MakerDao bite keeper to bite unsafe positions
 
 ### TODO
 
-- Find a way to avoid memory leak in when biting many
+- Find a way to avoid memory leak when biting many cdps
     - Creating a bite queue could be a solution
 - Subscribe to the new block event instead of using a setInterval mock
 - Use a log storage to persist important logs
 - Add API KEY middleware to avoid unauthorized requests
 - Validate input params
-- Receive some parameters trough as environment variables
+- Receive some params as environment variables
