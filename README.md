@@ -2,14 +2,14 @@
 
 A simple MakerDao bite keeper to bite unsafe positions
 
-## Requirements
+### Requirements
 
 - Depends on dai.js
 - It needs an etherium node. You can use infura
 - Needs a private key to sign transactions. You can use MetaMask
 - You can find environment variables names in src/config.js
 
-## Usage
+### Usage
 
 - `npm i`
 - `npm start`
@@ -17,14 +17,13 @@ A simple MakerDao bite keeper to bite unsafe positions
 - POST /bite-keeper/stop
 - GET /bite-keeper/status
 
-## Use with Docker
+### Use with Docker
 
-- `docker build -t dai-bite-keeper:1.0 .`
-- `docker run -p 5000:5000 dai-bite-keeper:1.0`
+- `docker build -t bite-keeper:1.0 .`
+- `docker run --env-file ./.env -p 5000:5000 bite-keeper:1.0`
 
-## TODO
+### TODO
 
-- Use Docker compose
 - Find a way to avoid memory leak in when biting many
     - Creating a bite queue could be a solution
 - Subscribe to the new block event instead of using a setInterval mock
